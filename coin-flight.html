@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HYPER BET BD</title>
+<style>
+  :root{
+    --bg:#0a0f1c; --panel:#121a2b; --panel2:#0e1524;
+    --text:#eaf0ff; --sub:#8fa0c2; --line:#1e2a44;
+    --accent:#5ec8ff; --gold:#ffc857; --danger:#ff6161; --win:#5ee6a0;
+    box-sizing:border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; }
+  body{
+    height:100%; margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; justify-content:center;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8;
+      --text:#111827; --sub:#5b6786; --line:#dde3f0;
+    }
+  }
+  :root[data-theme="dark"]{ }
+
+  .wrap{ width:100%; max-width:460px; padding:18px 16px 28px; }
+
+  header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  header h1{ font-size:1.3rem; margin:0; font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:2px 0 0; color:var(--sub); font-size:0.8rem; }
+  .balance{ text-align:right; }
+  .balance .amt{ font-size:1.15rem; font-weight:700; color:var(--gold); }
+  .balance .lbl{ font-size:0.72rem; color:var(--sub); }
+
+  .stage{
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
+    border:1px solid var(--line); border-radius:18px;
+    height:260px; position:relative; overflow:hidden; margin-bottom:14px;
+  }
+  .cloud{ position:absolute; font-size:1.4rem; opacity:0.35; }
+  .mult{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    font-size:3.1rem; font-weight:800; letter-spacing:-0.02em;
+    transition:color .15s;
+  }
+  .mult.pre{ color:var(--sub); }
+  .mult.live{ color:var(--accent); }
+  .mult.crash{ color:var(--danger); }
+  .mult.cashed{ color:var(--win); }
+  .status{
+    position:absolute; bottom:12px; left:0; right:0; text-align:center;
+    font-size:0.85rem; color:var(--sub); min-height:1.2em;
+  }
+  .plane{
+    position:absolute; font-size:1.6rem; transition:left .08s linear, bottom .08s linear;
+  }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:14px; margin-bottom:12px;
+  }
+  .row{ display:flex; gap:10px; align-items:center; }
+  .bet-input{
+    flex:1; background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:10px 12px; font-size:1rem; font-weight:600;
+    -moz-appearance:textfield;
+  }
+  .bet-input::-webkit-outer-spin-button, .bet-input::-webkit-inner-spin-button{ -webkit-appearance:none; }
+  .chip{
+    background:var(--panel2); border:1px solid var(--line); color:var(--sub);
+    border-radius:10px; padding:8px 10px; font-size:0.78rem; font-weight:600; cursor:pointer;
+  }
+  .chip:active{ transform:scale(0.96); }
+  .chips{ display:flex; gap:6px; margin-top:8px; }
+
+  button.main{
+    width:100%; margin-top:12px; padding:15px; border:none; border-radius:12px;
+    font-size:1.05rem; font-weight:700; cursor:pointer; transition:transform .08s, opacity .2s;
+  }
+  button.main:active{ transform:scale(0.98); }
+  button.main[disabled]{ opacity:0.4; cursor:default; transform:none; }
+  .btn-fly{ background:var(--accent); color:#04101c; }
+  .btn-cash{ background:var(--gold); color:#241a00; }
+
+  .stats{ display:flex; justify-content:space-between; gap:8px; }
+  .stat{ flex:1; background:var(--panel2); border-radius:10px; padding:10px; text-align:center; }
+  .stat .v{ font-weight:700; font-size:1rem; }
+  .stat .k{ font-size:0.68rem; color:var(--sub); margin-top:2px; }
+
+  .history{ display:flex; gap:6px; flex-wrap:wrap; }
+  .hchip{
+    padding:5px 9px; border-radius:8px; font-size:0.75rem; font-weight:700;
+  }
+  .hchip.win{ background:rgba(94,230,160,0.15); color:var(--win); }
+  .hchip.lose{ background:rgba(255,97,97,0.15); color:var(--danger); }
+
+  .note{ font-size:0.72rem; color:var(--sub); text-align:center; margin-top:14px; line-height:1.5; }
+  h2.section{ font-size:0.78rem; color:var(--sub); font-weight:600; margin:0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>কয়েন ফ্লাইট</h1>
+      <p>শুধু ভার্চুয়াল কয়েন · আসল টাকা নেই</p>
+    </div>
+    <div class="balance">
+      <div class="amt" id="balanceAmt">1000</div>
+      <div class="lbl">কয়েন</div>
+    </div>
+  </header>
+
+  <div class="stage" id="stage">
+    <div class="cloud" style="top:14%; left:12%;">☁️</div>
+    <div class="cloud" style="top:20%; right:14%; font-size:1rem;">☁️</div>
+    <div class="cloud" style="bottom:16%; left:20%; font-size:1.1rem;">☁️</div>
+    <div class="plane" id="plane" style="left:16%; bottom:22%;">✈️</div>
+    <div class="mult pre" id="multDisplay">1.00x</div>
+    <div class="status" id="statusText">বাজি বসিয়ে ওড়া শুরু করুন</div>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">বাজি</h2>
+    <div class="row">
+      <input class="bet-input" id="betInput" type="number" min="10" step="10" value="100" inputmode="numeric">
+    </div>
+    <div class="chips">
+      <div class="chip" data-amt="50">৫০</div>
+      <div class="chip" data-amt="100">১০০</div>
+      <div class="chip" data-amt="250">২৫০</div>
+      <div class="chip" data-amt="500">৫০০</div>
+    </div>
+    <button class="main btn-fly" id="actionBtn">ওড়া শুরু করুন</button>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">তোমার পরিসংখ্যান</h2>
+    <div class="stats">
+      <div class="stat"><div class="v" id="statBest">1.00x</div><div class="k">সেরা ক্যাশ-আউট</div></div>
+      <div class="stat"><div class="v" id="statGames">0</div><div class="k">মোট রাউন্ড</div></div>
+      <div class="stat"><div class="v" id="statWins">0</div><div class="k">জয়</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">সাম্প্রতিক রাউন্ড</h2>
+    <div class="history" id="history"></div>
+  </div>
+
+  <button class="chip" id="resetBtn" style="width:100%; margin-top:2px;">রিসেট (কয়েন আবার ১০০০)</button>
+
+  <p class="note">এটি একটি সচেতনতামূলক আর্কেড গেম — শুধু কাল্পনিক কয়েন দিয়ে খেলা হয়, কোনো আসল টাকা লাগে না, জেতে না, হারায় না।</p>
+</div>
+
+<script>
+(function(){
+  const KEY = 'coinFlightState_v1';
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return { balance:1000, best:1.0, games:0, wins:0, history:[] };
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  let state = load();
+
+  const balanceAmt = document.getElementById('balanceAmt');
+  const multDisplay = document.getElementById('multDisplay');
+  const statusText = document.getElementById('statusText');
+  const actionBtn = document.getElementById('actionBtn');
+  const betInput = document.getElementById('betInput');
+  const plane = document.getElementById('plane');
+  const statBest = document.getElementById('statBest');
+  const statGames = document.getElementById('statGames');
+  const statWins = document.getElementById('statWins');
+  const historyEl = document.getElementById('history');
+  const resetBtn = document.getElementById('resetBtn');
+
+  let phase = 'idle'; // idle | flying | crashed | cashed
+  let currentBet = 0;
+  let crashPoint = 1;
+  let startTime = 0;
+  let rafId = null;
+
+  function render(){
+    balanceAmt.textContent = Math.round(state.balance);
+    statBest.textContent = state.best.toFixed(2) + 'x';
+    statGames.textContent = state.games;
+    statWins.textContent = state.wins;
+    historyEl.innerHTML = state.history.slice(0,10).map(h=>{
+      const cls = h.win ? 'win' : 'lose';
+      const label = h.win ? ('+' + h.amount + '  ' + h.mult.toFixed(2) + 'x') : ('-' + h.amount + '  ' + h.mult.toFixed(2) + 'x');
+      return '<span class="hchip ' + cls + '">' + label + '</span>';
+    }).join('') || '<span style="color:var(--sub); font-size:0.8rem;">এখনো কোনো রাউন্ড হয়নি</span>';
+  }
+
+  function setChips(){
+    document.querySelectorAll('.chip[data-amt]').forEach(c=>{
+      c.addEventListener('click', ()=>{
+        if(phase==='flying') return;
+        betInput.value = c.getAttribute('data-amt');
+      });
+    });
+  }
+
+  function genCrashPoint(){
+    // Biased toward low multipliers, occasional big ones, capped for sanity.
+    const r = Math.random();
+    let cp = 0.98 / (1 - r);
+    cp = Math.max(1.01, Math.min(cp, 25));
+    return cp;
+  }
+
+  function startRound(){
+    const bet = Math.floor(Number(betInput.value));
+    if(!bet || bet < 10){
+      statusText.textContent = 'কমপক্ষে ১০ কয়েন বাজি ধরুন';
+      return;
+    }
+    if(bet > state.balance){
+      statusText.textContent = 'পর্যাপ্ত কয়েন নেই';
+      return;
+    }
+    currentBet = bet;
+    state.balance -= bet;
+    render();
+
+    phase = 'flying';
+    crashPoint = genCrashPoint();
+    startTime = performance.now();
+
+    actionBtn.textContent = 'ক্যাশ-আউট';
+    actionBtn.className = 'main btn-cash';
+    betInput.disabled = true;
+    multDisplay.className = 'mult live';
+    statusText.textContent = 'উড়ছে... সময়মতো ক্যাশ-আউট করুন';
+
+    tick();
+  }
+
+  function tick(){
+    const elapsed = performance.now() - startTime;
+    const current = Math.pow(1.00013, elapsed); // smooth exponential climb
+    if(current >= crashPoint){
+      crashRound(crashPoint);
+      return;
+    }
+    multDisplay.textContent = current.toFixed(2) + 'x';
+    const pct = Math.min(0.72, (current - 1) / 6);
+    plane.style.left = (16 + pct*60) + '%';
+    plane.style.bottom = (22 + pct*46) + '%';
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function crashRound(finalMult){
+    cancelAnimationFrame(rafId);
+    phase = 'crashed';
+    multDisplay.textContent = finalMult.toFixed(2) + 'x';
+    multDisplay.className = 'mult crash';
+    statusText.textContent = 'ফেটে গেল! এই রাউন্ডে ' + currentBet + ' কয়েন হারিয়েছেন';
+    plane.textContent = '💥';
+
+    state.games += 1;
+    state.history.unshift({ win:false, amount:currentBet, mult:finalMult });
+    save();
+    render();
+    endRound();
+  }
+
+  function cashOut(){
+    if(phase !== 'flying') return;
+    cancelAnimationFrame(rafId);
+    const elapsed = performance.now() - startTime;
+    const finalMult = Math.min(Math.pow(1.00013, elapsed), crashPoint - 0.001);
+    const winnings = Math.round(currentBet * finalMult);
+
+    phase = 'cashed';
+    multDisplay.textContent = finalMult.toFixed(2) + 'x';
+    multDisplay.className = 'mult cashed';
+    statusText.textContent = 'ক্যাশ-আউট সফল! +' + winnings + ' কয়েন যোগ হলো';
+
+    state.balance += winnings;
+    state.games += 1;
+    state.wins += 1;
+    if(finalMult > state.best) state.best = finalMult;
+    state.history.unshift({ win:true, amount:winnings, mult:finalMult });
+    save();
+    render();
+    endRound();
+  }
+
+  function endRound(){
+    actionBtn.textContent = 'আবার ওড়ান';
+    actionBtn.className = 'main btn-fly';
+    betInput.disabled = false;
+    setTimeout(()=>{
+      phase = 'idle';
+      multDisplay.textContent = '1.00x';
+      multDisplay.className = 'mult pre';
+      plane.textContent = '✈️';
+      plane.style.left = '16%';
+      plane.style.bottom = '22%';
+      statusText.textContent = 'বাজি বসিয়ে ওড়া শুরু করুন';
+    }, 1800);
+  }
+
+  actionBtn.addEventListener('click', ()=>{
+    if(phase === 'idle' || phase === 'crashed' || phase === 'cashed'){
+      startRound();
+    }else if(phase === 'flying'){
+      cashOut();
+    }
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    if(!confirm('কয়েন আবার ১০০০-এ রিসেট করবেন? ইতিহাস মুছে যাবে।')) return;
+    state = { balance:1000, best:1.0, games:0, wins:0, history:[] };
+    save();
+    render();
+  });
+
+  setChips();
+  render();
+})();
+</script>
+</body>
+</html>
