@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HYPER BET BD</title>
+<style>
+  :root{
+    --bg:#0a0f1c; --panel:#121a2b; --panel2:#0e1524;
+    --text:#eaf0ff; --sub:#8fa0c2; --line:#1e2a44;
+    --accent:#5ec8ff; --gold:#ffc857; --danger:#ff6161; --win:#5ee6a0; --purple:#b98bff;
+    box-sizing:border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  html{ scroll-padding-top: env(safe-area-inset-top, 0px); height:100%; }
+  body{
+    height:100%; margin:0; background:var(--bg); color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    display:flex; justify-content:center; overflow-x:hidden;
+  }
+  @media (prefers-color-scheme: light){
+    :root:not([data-theme="dark"]){
+      --bg:#f4f6fb; --panel:#ffffff; --panel2:#eef1f8;
+      --text:#111827; --sub:#5b6786; --line:#dde3f0;
+    }
+  }
+  .wrap{ width:100%; max-width:460px; padding:18px 16px 28px; }
+
+  header{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  header h1{ font-size:1.3rem; margin:0; font-weight:700; letter-spacing:-0.01em; }
+  header p{ margin:2px 0 0; color:var(--sub); font-size:0.8rem; }
+  .balance{ text-align:right; }
+  .balance .amt{ font-size:1.15rem; font-weight:700; color:var(--gold); transition:transform .2s; }
+  .balance .lbl{ font-size:0.72rem; color:var(--sub); }
+  .balance.pulse .amt{ animation:pulseAmt .5s ease; }
+  @keyframes pulseAmt{ 0%{transform:scale(1);} 40%{transform:scale(1.18);} 100%{transform:scale(1);} }
+
+  .download-btn{
+    display:block; text-align:center; background:var(--accent); color:#04101c;
+    font-weight:700; padding:12px; border-radius:12px; text-decoration:none;
+    margin-bottom:14px;
+  }
+
+  .stage{
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
+    border:1px solid var(--line); border-radius:18px;
+    height:270px; position:relative; overflow:hidden; margin-bottom:14px;
+    transition:box-shadow .2s;
+  }
+  .stage.shake{ animation:shakeStage .4s; }
+  @keyframes shakeStage{
+    0%,100%{ transform:translateX(0); }
+    20%{ transform:translateX(-6px); }
+    40%{ transform:translateX(5px); }
+    60%{ transform:translateX(-4px); }
+    80%{ transform:translateX(3px); }
+  }
+  .flash{
+    position:absolute; inset:0; pointer-events:none; opacity:0;
+  }
+  .flash.win{ background:radial-gradient(circle at 50% 55%, rgba(94,230,160,.35), transparent 70%); }
+  .flash.crash{ background:radial-gradient(circle at 50% 55%, rgba(255,97,97,.4), transparent 70%); }
+  .flash.show{ animation:flashFade .7s ease-out; }
+  @keyframes flashFade{ 0%{opacity:1;} 100%{opacity:0;} }
+
+  .cloud{ position:absolute; font-size:1.4rem; opacity:0.35; animation:driftCloud 14s linear infinite; }
+  @keyframes driftCloud{ 0%{transform:translateX(0);} 100%{transform:translateX(-40px);} }
+
+  .trail{
+    position:absolute; height:3px; border-radius:3px;
+    background:linear-gradient(90deg, transparent, var(--accent));
+    opacity:0.5; transform-origin:right center;
+  }
+
+  .mult{
+    position:absolute; top:44%; left:50%; transform:translate(-50%,-50%);
+    font-size:3rem; font-weight:800; letter-spacing:-0.02em;
+    transition:color .2s;
+  }
+  .mult.pre{ color:var(--sub); font-size:1.3rem; }
+  .mult.live{ color:var(--accent); }
+  .mult.live.tier2{ color:var(--purple); }
+  .mult.live.tier3{ color:var(--gold); }
+  .mult.crash{ color:var(--danger); }
+  .mult.cashed{ color:var(--win); }
+
+  .status{
+    position:absolute; bottom:12px; left:0; right:0; text-align:center;
+    font-size:0.85rem; color:var(--sub); min-height:1.2em; padding:0 12px;
+  }
+  .plane{
+    position:absolute; font-size:1.6rem;
+    transition:left .1s linear, bottom .1s linear, transform .1s linear;
+  }
+  .plane.idle{ animation:bobPlane 2s ease-in-out infinite; }
+  @keyframes bobPlane{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-6px); } }
+  .plane.crashed img{ filter:grayscale(1) brightness(.6); }
+  .plane.mega img, .plane.mega #planeEmoji{ filter:drop-shadow(0 0 8px var(--gold)); }
+  .stage.mega{ box-shadow: inset 0 0 40px rgba(255,200,87,.35); }
+  .mega-badge{
+    position:absolute; top:10px; left:50%; transform:translateX(-50%);
+    background:var(--gold); color:#241a00; font-weight:800; font-size:0.72rem;
+    padding:3px 10px; border-radius:20px; opacity:0; transition:opacity .3s;
+  }
+  .mega-badge.show{ opacity:1; }
+
+  .float-coin{
+    position:absolute; font-weight:800; font-size:1rem; color:var(--win);
+    animation:floatUp 1s ease-out forwards; pointer-events:none;
+  }
+  @keyframes floatUp{
+    0%{ opacity:1; transform:translateY(0); }
+    100%{ opacity:0; transform:translateY(-40px); }
+  }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:16px;
+    padding:14px; margin-bottom:12px;
+  }
+  .row{ display:flex; gap:10px; align-items:center; }
+  .bet-input{
+    flex:1; background:var(--panel2); border:1px solid var(--line); color:var(--text);
+    border-radius:10px; padding:10px 12px; font-size:1rem; font-weight:600;
+    -moz-appearance:textfield;
+  }
+  .bet-input::-webkit-outer-spin-button, .bet-input::-webkit-inner-spin-button{ -webkit-appearance:none; }
+  .chip{
+    background:var(--panel2); border:1px solid var(--line); color:var(--sub);
+    border-radius:10px; padding:8px 10px; font-size:0.78rem; font-weight:600; cursor:pointer;
+  }
+  .chip:active{ transform:scale(0.96); }
+  .chips{ display:flex; gap:6px; margin-top:8px; }
+
+  button.main{
+    width:100%; margin-top:12px; padding:15px; border:none; border-radius:12px;
+    font-size:1.05rem; font-weight:700; cursor:pointer; transition:transform .08s, opacity .2s;
+  }
+  button.main:active{ transform:scale(0.98); }
+  button.main[disabled]{ opacity:0.4; cursor:default; transform:none; }
+  .btn-bet{ background:var(--accent); color:#04101c; }
+  .btn-cash{ background:var(--gold); color:#241a00; }
+  .btn-queued{ background:var(--panel2); color:var(--sub); border:1px solid var(--line); }
+
+  .stats{ display:flex; justify-content:space-between; gap:8px; }
+  .stat{ flex:1; background:var(--panel2); border-radius:10px; padding:10px; text-align:center; }
+  .stat .v{ font-weight:700; font-size:1rem; }
+  .stat .k{ font-size:0.68rem; color:var(--sub); margin-top:2px; }
+
+  .history{ display:flex; gap:6px; flex-wrap:wrap; }
+  .hchip{ padding:5px 9px; border-radius:8px; font-size:0.75rem; font-weight:700; }
+  .hchip.win{ background:rgba(94,230,160,0.15); color:var(--win); }
+  .hchip.lose{ background:rgba(255,97,97,0.15); color:var(--danger); }
+
+  .note{ font-size:0.72rem; color:var(--sub); text-align:center; margin-top:14px; line-height:1.5; }
+  h2.section{ font-size:0.78rem; color:var(--sub); font-weight:600; margin:0 0 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div>
+      <h1>HYPER BET BD</h1>
+      <p>শুধু ভার্চুয়াল কয়েন · আসল টাকা নেই</p>
+    </div>
+    <div class="balance" id="balanceBox">
+      <div class="amt" id="balanceAmt">0</div>
+      <div class="lbl">কয়েন</div>
+    </div>
+  </header>
+
+  <a href="hyperbetbd.apk" download class="download-btn">⬇️ Download App (APK)</a>
+
+  <div class="stage" id="stage">
+    <div class="flash" id="flash"></div>
+    <div class="cloud" style="top:14%; left:12%;">☁️</div>
+    <div class="cloud" style="top:20%; right:14%; font-size:1rem; animation-delay:-4s;">☁️</div>
+    <div class="cloud" style="bottom:16%; left:20%; font-size:1.1rem; animation-delay:-8s;">☁️</div>
+    <div class="trail" id="trail" style="display:none;"></div>
+    <div class="mega-badge" id="megaBadge">🔥 মেগা ফ্লাইট!</div>
+    <div class="plane idle" id="plane" style="left:16%; bottom:22%;">
+      <span id="planeEmoji">✈️</span>
+      <img id="planeImg" src="assets/plane.jpg" alt="" style="display:none; width:64px; height:auto; border-radius:6px;">
+    </div>
+    <div class="mult pre" id="multDisplay">প্রস্তুত হচ্ছে...</div>
+    <div class="status" id="statusText">পরবর্তী ফ্লাইটের অপেক্ষা...</div>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">বাজি</h2>
+    <div class="row">
+      <input class="bet-input" id="betInput" type="number" min="10" max="1000" step="10" value="100" inputmode="numeric">
+    </div>
+    <p style="font-size:0.72rem; color:var(--sub); margin:6px 0 0;">সর্বনিম্ন: ১০ কয়েন &nbsp;·&nbsp; সর্বোচ্চ: ১০০০ কয়েন</p>
+    <div class="chips">
+      <div class="chip" data-amt="50">৫০</div>
+      <div class="chip" data-amt="100">১০০</div>
+      <div class="chip" data-amt="250">২৫০</div>
+      <div class="chip" data-amt="500">৫০০</div>
+    </div>
+    <button class="main btn-bet" id="actionBtn">বাজি ধরুন (পরের ফ্লাইট)</button>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">তোমার পরিসংখ্যান</h2>
+    <div class="stats">
+      <div class="stat"><div class="v" id="statBest">1.00x</div><div class="k">সেরা ক্যাশ-আউট</div></div>
+      <div class="stat"><div class="v" id="statGames">0</div><div class="k">মোট রাউন্ড</div></div>
+      <div class="stat"><div class="v" id="statWins">0</div><div class="k">জয়</div></div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">সাম্প্রতিক রাউন্ড</h2>
+    <div class="history" id="history"></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">কোড রিডিম করুন</h2>
+    <div class="row">
+      <input class="bet-input" id="redeemInput" type="text" placeholder="কোড লিখুন" style="text-transform:uppercase;">
+    </div>
+    <button class="main btn-bet" id="redeemBtn" style="margin-top:8px;">রিডিম করুন</button>
+    <p id="redeemMsg" style="font-size:0.78rem; color:var(--sub); text-align:center; margin:8px 0 0;"></p>
+  </div>
+
+  <div class="panel">
+    <h2 class="section">কয়েন বাদ দিন</h2>
+    <div class="row">
+      <input class="bet-input" id="subtractInput" type="number" min="1" placeholder="কত কয়েন বাদ দেবেন" inputmode="numeric">
+    </div>
+    <button class="main btn-queued" id="subtractBtn" style="margin-top:8px;">বাদ দিন</button>
+    <p id="subtractMsg" style="font-size:0.78rem; color:var(--sub); text-align:center; margin:8px 0 0;"></p>
+  </div>
+
+  <button class="chip" id="resetBtn" style="width:100%; margin-top:2px;">রিসেট (কয়েন শূন্য করুন)</button>
+
+  <p class="note">এটি একটি সচেতনতামূলক আর্কেড গেম — শুধু কাল্পনিক কয়েন দিয়ে খেলা হয়, কোনো আসল টাকা লাগে না, জেতে না, হারায় না। ফ্লাইট নিজে থেকেই বারবার ওড়ে; আপনি প্রতি রাউন্ডে বাজি ধরবেন কি না তা নিজেই বেছে নেন।</p>
+</div>
+
+<script>
+(function(){
+  const KEY = 'hyperBetBdState_v2';
+  function load(){
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return { balance:0, best:1.0, games:0, wins:0, history:[], redeemedCodes:[] };
+  }
+  function save(){
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+  }
+
+  let state = load();
+  if(!Array.isArray(state.redeemedCodes)) state.redeemedCodes = [];
+
+  const balanceAmt = document.getElementById('balanceAmt');
+  const balanceBox = document.getElementById('balanceBox');
+  const multDisplay = document.getElementById('multDisplay');
+  const statusText = document.getElementById('statusText');
+  const actionBtn = document.getElementById('actionBtn');
+  const betInput = document.getElementById('betInput');
+  const plane = document.getElementById('plane');
+  const planeEmoji = document.getElementById('planeEmoji');
+  const planeImg = document.getElementById('planeImg');
+  const stage = document.getElementById('stage');
+  const flash = document.getElementById('flash');
+  const trail = document.getElementById('trail');
+  const megaBadge = document.getElementById('megaBadge');
+
+  // Try to load a custom plane image; fall back to the emoji if it's not there.
+  let customPlaneLoaded = false;
+  (function tryCustomPlane(){
+    const test = new Image();
+    test.onload = ()=>{
+      customPlaneLoaded = true;
+      planeImg.src = 'assets/plane.jpg';
+      planeImg.style.display = 'block';
+      planeEmoji.style.display = 'none';
+    };
+    test.src = 'assets/plane.jpg';
+  })();
+
+  // A pool of sky backgrounds; one is picked at random for each new round.
+  // Add more filenames here any time (bg4.jpg, bg5.jpg, ...) and they'll be
+  // included in the random pool automatically.
+  const SKY_BACKGROUNDS = ['assets/bg1.jpg', 'assets/bg2.jpg', 'assets/bg3.jpg', 'assets/bg4.jpg'];
+
+  function setRandomBackground(){
+    const pick = SKY_BACKGROUNDS[Math.floor(Math.random() * SKY_BACKGROUNDS.length)];
+    const test = new Image();
+    test.onload = ()=>{
+      stage.style.backgroundImage = 'linear-gradient(180deg, rgba(10,15,28,.15), rgba(10,15,28,.55)), url(' + pick + ')';
+      stage.style.backgroundSize = 'cover';
+      stage.style.backgroundPosition = 'center';
+    };
+    test.onerror = ()=>{
+      stage.style.backgroundImage = '';
+    };
+    test.src = pick;
+  }
+
+  function setPlaneVisual(kind){ // idle | flying | crashed
+    plane.classList.remove('idle','crashed');
+    if(kind === 'idle') plane.classList.add('idle');
+    if(kind === 'crashed') plane.classList.add('crashed');
+    if(!customPlaneLoaded){
+      planeEmoji.textContent = kind === 'crashed' ? '💥' : '✈️';
+    }
+  }
+  const statBest = document.getElementById('statBest');
+  const statGames = document.getElementById('statGames');
+  const statWins = document.getElementById('statWins');
+  const historyEl = document.getElementById('history');
+  const redeemInput = document.getElementById('redeemInput');
+  const redeemBtn = document.getElementById('redeemBtn');
+  const redeemMsg = document.getElementById('redeemMsg');
+  const subtractInput = document.getElementById('subtractInput');
+  const subtractBtn = document.getElementById('subtractBtn');
+  const subtractMsg = document.getElementById('subtractMsg');
+  const resetBtn = document.getElementById('resetBtn');
+
+  const WAIT_MS = 6000;
+  const CRASH_SHOW_MS = 2200;
+
+  // Single source of truth for game phase, guarded by roundId so stale
+  // timers from a previous round can never affect a newer one.
+  let roundId = 0;
+  let phase = 'waiting';       // waiting | flying | crashed
+  let phaseStart = performance.now();
+  let crashPoint = 1;
+  let queuedBet = null;        // amount queued to enter the NEXT flying phase
+  let activeBet = null;        // { amount, cashed, cashMult } for the CURRENT flying round
+  let rafId = null;
+
+  function render(){
+    balanceAmt.textContent = Math.round(state.balance);
+    statBest.textContent = state.best.toFixed(2) + 'x';
+    statGames.textContent = state.games;
+    statWins.textContent = state.wins;
+    historyEl.innerHTML = state.history.slice(0,10).map(h=>{
+      const cls = h.win ? 'win' : 'lose';
+      const label = h.win ? ('+' + h.amount + '  ' + h.mult.toFixed(2) + 'x') : ('-' + h.amount + '  ' + h.mult.toFixed(2) + 'x');
+      return '<span class="hchip ' + cls + '">' + label + '</span>';
+    }).join('') || '<span style="color:var(--sub); font-size:0.8rem;">এখনো কোনো রাউন্ড হয়নি</span>';
+  }
+
+  function pulseBalance(){
+    balanceBox.classList.remove('pulse');
+    void balanceBox.offsetWidth;
+    balanceBox.classList.add('pulse');
+  }
+
+  function flashEffect(kind){
+    flash.className = 'flash ' + kind;
+    void flash.offsetWidth;
+    flash.classList.add('show');
+  }
+
+  function floatCoin(text, x, y, color){
+    const el = document.createElement('div');
+    el.className = 'float-coin';
+    el.textContent = text;
+    el.style.left = x + '%';
+    el.style.bottom = y + '%';
+    el.style.color = color;
+    stage.appendChild(el);
+    setTimeout(()=> el.remove(), 1000);
+  }
+
+  document.querySelectorAll('.chip[data-amt]').forEach(c=>{
+    c.addEventListener('click', ()=>{
+      betInput.value = c.getAttribute('data-amt');
+    });
+  });
+
+  function genCrashPoint(){
+    // ~3% of rounds are a "mega flight" that can climb far higher.
+    if(Math.random() < 0.01){
+      return 20 + Math.random() * 980; // 20x up to ~1000x
+    }
+    const r = Math.random();
+    let cp = 0.98 / (1 - r);
+    cp = Math.max(1.01, Math.min(cp, 20));
+    return cp;
+  }
+
+  function currentMultiplier(){
+    if(phase !== 'flying') return 1;
+    const elapsed = performance.now() - phaseStart;
+    return Math.pow(1.00013, elapsed);
+  }
+
+  // ---- Phase transitions ----
+
+  function startWaiting(){
+    roundId++;
+    const myRound = roundId;
+    phase = 'waiting';
+    phaseStart = performance.now();
+    activeBet = null;
+    trail.style.display = 'none';
+    setPlaneVisual('idle');
+    setRandomBackground();
+    stage.classList.remove('mega');
+    megaBadge.classList.remove('show');
+    plane.style.left = '16%';
+    plane.style.bottom = '22%';
+    multDisplay.className = 'mult pre';
+
+    if(queuedBet){
+      actionBtn.textContent = 'বাজি বাতিল করুন (' + queuedBet + ' কয়েন বসানো আছে)';
+      actionBtn.className = 'main btn-queued';
+    }else{
+      actionBtn.textContent = 'বাজি ধরুন (পরের ফ্লাইট)';
+      actionBtn.className = 'main btn-bet';
+    }
+    actionBtn.disabled = false;
+    betInput.disabled = !!queuedBet;
+
+    tickWaiting(myRound);
+  }
+
+  function tickWaiting(myRound){
+    if(myRound !== roundId) return;
+    const remain = Math.max(0, WAIT_MS - (performance.now() - phaseStart));
+    const secs = Math.ceil(remain / 1000);
+    multDisplay.textContent = secs + 's';
+    statusText.textContent = queuedBet
+      ? ('বাজি বসানো আছে (' + queuedBet + ' কয়েন) — ফ্লাইট উড়তে যাচ্ছে...')
+      : 'চাইলে বাজি ধরুন, নাহলে এই রাউন্ড স্কিপ হবে';
+
+    if(remain <= 0){
+      startFlying(myRound);
+    }else{
+      requestAnimationFrame(()=> tickWaiting(myRound));
+    }
+  }
+
+  function startFlying(myRound){
+    if(myRound !== roundId) return;
+    phase = 'flying';
+    phaseStart = performance.now();
+    crashPoint = genCrashPoint();
+    setPlaneVisual('flying');
+    multDisplay.className = 'mult live';
+    trail.style.display = 'block';
+
+    if(queuedBet){
+      const bet = queuedBet;
+      queuedBet = null;
+      if(bet > state.balance){
+        statusText.textContent = 'পর্যাপ্ত কয়েন নেই, এই রাউন্ড দেখুন শুধু';
+        actionBtn.disabled = true;
+      }else{
+        activeBet = { amount: bet, cashed:false, cashMult:0 };
+        state.balance -= bet;
+        pulseBalance();
+        render();
+        actionBtn.textContent = 'ক্যাশ-আউট';
+        actionBtn.className = 'main btn-cash';
+        actionBtn.disabled = false;
+        statusText.textContent = 'উড়ছে... সময়মতো ক্যাশ-আউট করুন';
+      }
+    }else{
+      actionBtn.textContent = 'বাজি ধরুন (পরের ফ্লাইট)';
+      actionBtn.className = 'main btn-bet';
+      actionBtn.disabled = true;
+      statusText.textContent = 'উড়ছে... (এই রাউন্ডে আপনি বাজি ধরেননি)';
+    }
+    betInput.disabled = true;
+
+    tickFlying(myRound);
+  }
+
+  function tickFlying(myRound){
+    if(myRound !== roundId) return;
+    const current = currentMultiplier();
+
+    if(current >= crashPoint){
+      crashRound(myRound, crashPoint);
+      return;
+    }
+
+    multDisplay.textContent = current.toFixed(2) + 'x';
+    multDisplay.className = 'mult live' + (current>=5 ? ' tier3' : current>=2 ? ' tier2' : '');
+
+    if(current >= 20){
+      stage.classList.add('mega');
+      plane.classList.add('mega');
+      megaBadge.classList.add('show');
+    }
+
+    const pct = Math.min(0.72, (current - 1) / 6);
+    const leftPct = 16 + pct*60;
+    const bottomPct = 22 + pct*46;
+    plane.style.left = leftPct + '%';
+    plane.style.bottom = bottomPct + '%';
+    plane.style.transform = 'rotate(-' + Math.min(18, pct*22) + 'deg)';
+
+    trail.style.left = '10%';
+    trail.style.bottom = (bottomPct - 2) + '%';
+    trail.style.width = (leftPct - 8) + '%';
+
+    rafId = requestAnimationFrame(()=> tickFlying(myRound));
+  }
+
+  function cashOut(){
+    if(phase !== 'flying' || !activeBet || activeBet.cashed) return;
+    const mult = Math.min(currentMultiplier(), crashPoint - 0.001);
+    const winnings = Math.round(activeBet.amount * mult);
+
+    activeBet.cashed = true;
+    activeBet.cashMult = mult;
+
+    state.balance += winnings;
+    state.games += 1;
+    state.wins += 1;
+    if(mult > state.best) state.best = mult;
+    state.history.unshift({ win:true, amount:winnings, mult:mult });
+    save();
+    pulseBalance();
+    render();
+
+    flashEffect('win');
+    floatCoin('+' + winnings, 55, 55, 'var(--win)');
+
+    actionBtn.textContent = 'ক্যাশ-আউট হয়েছে ✓';
+    actionBtn.className = 'main btn-queued';
+    actionBtn.disabled = true;
+    statusText.textContent = mult.toFixed(2) + 'x এ ক্যাশ-আউট! +' + winnings + ' কয়েন';
+  }
+
+  function crashRound(myRound, finalMult){
+    if(myRound !== roundId) return;
+    cancelAnimationFrame(rafId);
+    phase = 'crashed';
+    phaseStart = performance.now();
+
+    multDisplay.textContent = finalMult.toFixed(2) + 'x';
+    multDisplay.className = 'mult crash';
+    setPlaneVisual('crashed');
+    plane.classList.remove('mega');
+    stage.classList.remove('mega');
+    megaBadge.classList.remove('show');
+    stage.classList.add('shake');
+    setTimeout(()=> stage.classList.remove('shake'), 400);
+
+    if(activeBet && !activeBet.cashed){
+      state.games += 1;
+      state.history.unshift({ win:false, amount:activeBet.amount, mult:finalMult });
+      save();
+      render();
+      flashEffect('crash');
+      statusText.textContent = 'ফেটে গেল! ' + activeBet.amount + ' কয়েন হারিয়েছেন';
+    }else if(activeBet && activeBet.cashed){
+      statusText.textContent = 'ফেটে গেল — কিন্তু আপনি আগেই ক্যাশ-আউট করেছেন ✓';
+    }else{
+      statusText.textContent = 'ফেটে গেল ' + finalMult.toFixed(2) + 'x এ — এই রাউন্ডে আপনি খেলেননি';
+    }
+
+    actionBtn.disabled = true;
+
+    setTimeout(()=>{
+      if(myRound !== roundId) return;
+      startWaiting();
+    }, CRASH_SHOW_MS);
+  }
+
+  // ---- Bet queue / cash-out button ----
+  // A short lock after every tap prevents mobile browsers that fire both a
+  // touch and a click event from double-processing the same action (the
+  // likely cause of "balance deducted but not credited" glitches before).
+  let actionLock = false;
+
+  actionBtn.addEventListener('click', ()=>{
+    if(actionLock) return;
+    actionLock = true;
+    setTimeout(()=>{ actionLock = false; }, 300);
+
+    if(phase === 'flying' && activeBet && !activeBet.cashed){
+      cashOut();
+      return;
+    }
+    if(phase === 'waiting'){
+      if(queuedBet){
+        queuedBet = null;
+        actionBtn.textContent = 'বাজি ধরুন (পরের ফ্লাইট)';
+        actionBtn.className = 'main btn-bet';
+        betInput.disabled = false;
+        statusText.textContent = 'বাজি বাতিল হয়েছে';
+      }else{
+        const bet = Math.floor(Number(betInput.value));
+        if(!bet || bet < 10){
+          statusText.textContent = 'কমপক্ষে ১০ কয়েন বাজি ধরুন';
+          return;
+        }
+        if(bet > 1000){
+          statusText.textContent = 'সর্বোচ্চ ১০০০ কয়েন পর্যন্ত বাজি ধরা যাবে';
+          return;
+        }
+        if(bet > state.balance){
+          statusText.textContent = 'পর্যাপ্ত কয়েন নেই';
+          return;
+        }
+        queuedBet = bet;
+        actionBtn.textContent = 'বাজি বাতিল করুন (' + bet + ' কয়েন বসানো আছে)';
+        actionBtn.className = 'main btn-queued';
+        betInput.disabled = true;
+        statusText.textContent = 'বাজি বসানো হয়েছে, ফ্লাইট শুরুর অপেক্ষায়';
+      }
+    }
+  });
+
+  // Owner-controlled coin codes: edit this list to add or change codes.
+  // Format: 'CODE': coinAmount. Codes are matched case-insensitively.
+  // Each code can be redeemed once per device (tracked in this browser's storage) —
+  // this is a static site with no server, so it can't stop the same code being
+  // used from a different phone/browser; for that, a small backend would be needed.
+  const REDEEM_CODES = {
+    'HYPER100': 100,
+    'WELCOME500': 500,
+  };
+
+  let redeemLock = false;
+  redeemBtn.addEventListener('click', ()=>{
+    if(redeemLock) return;
+    redeemLock = true;
+    setTimeout(()=>{ redeemLock = false; }, 300);
+
+    const raw = redeemInput.value.trim().toUpperCase();
+    if(!raw){
+      redeemMsg.textContent = 'একটা কোড লিখুন';
+      return;
+    }
+    if(!(raw in REDEEM_CODES)){
+      redeemMsg.textContent = 'ভুল কোড';
+      return;
+    }
+    if(state.redeemedCodes.includes(raw)){
+      redeemMsg.textContent = 'এই কোডটা আগেই ব্যবহার হয়েছে';
+      return;
+    }
+    const amount = REDEEM_CODES[raw];
+    state.balance += amount;
+    state.redeemedCodes.push(raw);
+    save();
+    pulseBalance();
+    render();
+    redeemMsg.textContent = '+' + amount + ' কয়েন যোগ হয়েছে!';
+    redeemInput.value = '';
+  });
+
+  let subtractLock = false;
+  subtractBtn.addEventListener('click', ()=>{
+    if(subtractLock) return;
+    subtractLock = true;
+    setTimeout(()=>{ subtractLock = false; }, 300);
+
+    const amt = Math.floor(Number(subtractInput.value));
+    if(!amt || amt <= 0){
+      subtractMsg.textContent = 'একটা সঠিক সংখ্যা লিখুন';
+      return;
+    }
+    if(amt > state.balance){
+      subtractMsg.textContent = 'আপনার কাছে এত কয়েন নেই';
+      return;
+    }
+    state.balance -= amt;
+    save();
+    pulseBalance();
+    render();
+    subtractMsg.textContent = amt + ' কয়েন বাদ দেওয়া হয়েছে';
+    subtractInput.value = '';
+  });
+
+  let resetLock = false;
+  resetBtn.addEventListener('click', ()=>{
+    if(resetLock) return;
+    resetLock = true;
+    setTimeout(()=>{ resetLock = false; }, 300);
+
+    if(!confirm('কয়েন শূন্য (০) করে দেওয়া হবে, কোনো এক্সট্রা কয়েন পাবেন না। নিশ্চিত?')) return;
+    state.balance = 0;
+    save();
+    pulseBalance();
+    render();
+  });
+
+  render();
+  startWaiting();
+})();
+</script>
+</body>
+</html>
